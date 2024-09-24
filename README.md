@@ -83,16 +83,24 @@ This project can also be run using Docker. Follow the steps below:
 3. Run the Docker container:
 
     ```bash
+    xhost +local:root  # On linux allow access to X11 display for local root user
 
-    docker run -it --rm pysound-interactive
-
-If you need to expose a specific port, you can add the -p option to the docker run command:
-
-```bash
-docker run -it --rm -p 8000:8000 pysound-interactive
-```
-
-See the offical Docker documentation for more deatils
+    docker run -it \
+    --env="DISPLAY" \
+    --env="PULSE_SERVER=unix:/run/user/$(id -u)/pulse/native" \
+    --volume="/run/user/$(id -u)/pulse/native:/run/user/$(id -u)/pulse/native" \
+    --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+    --volume="$HOME/.config/pulse/cookie:/root/.config/pulse/cookie" \
+    --device /dev/snd \
+    --env="SDL_VIDEODRIVER=x11" \
+    -p 8000:8000 \
+    pysound-interactive  # on Linux
+    
+    docker run -it \
+    --gpus all \
+    --env DISPLAY=host.docker.internal:0 \
+    -p 8000:8000 \
+        docker run -it --rm pysound-interactive # on WSL
 
 ## Contributing
 
